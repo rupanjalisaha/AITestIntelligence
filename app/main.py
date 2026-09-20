@@ -5,16 +5,9 @@ from app.models import (
     TestGenerationRequest,
     TestGenerationResponse,
     TestEvaluationRequest,
-    AutomationGenerationRequest,
-    PageInspectionRequest,
-    PageInspectionResponse,
-    TestExecutionRequest,
     AutomationRunRequest,
     AutomationRunResponse,
-    ApiTestGenerationRequest,
-    ApiTestGenerationResponse,
-    ApiTestExecutionRequest,
-    ApiTestExecutionResponse
+    ApiTestGenerationRequest
 )
 
 from app.services.test_generator import TestGenerator
@@ -92,7 +85,7 @@ def generate_tests(
 # ============================================================
 
 @app.post(
-    "/api/v1/tests/evaluate"
+    "/api/v1/tests/validate"
 )
 def evaluate_tests(
     request: TestEvaluationRequest
@@ -112,89 +105,6 @@ def evaluate_tests(
             status_code=500,
             detail=str(exc)
         )
-
-
-# ============================================================
-# UI APPLICATION INSPECTION
-# ============================================================
-
-@app.post(
-    "/api/v1/automation/inspect",
-    response_model=PageInspectionResponse
-)
-def inspect_application(
-    request: PageInspectionRequest
-):
-    try:
-
-        result = page_inspector.inspect(
-            request.application_url
-        )
-
-        return result
-
-    except Exception as exc:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(exc)
-        )
-
-
-# ============================================================
-# UI AUTOMATION GENERATION
-# ============================================================
-
-@app.post(
-    "/api/v1/automation/generate"
-)
-def generate_automation(
-    request: AutomationGenerationRequest
-):
-    try:
-
-        result = automation_generator.generate_selenium_code(
-            test_case=request.test_case,
-            application_url=request.application_url,
-            page_elements=request.page_elements
-        )
-
-        return result
-
-    except Exception as exc:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(exc)
-        )
-
-
-# ============================================================
-# UI AUTOMATION EXECUTION
-# ============================================================
-
-@app.post(
-    "/api/v1/automation/execute"
-)
-def execute_automation(
-    request: TestExecutionRequest
-):
-    try:
-
-        result = test_executor.execute(
-            test_case_id=request.test_case_id,
-            code=request.code
-        )
-
-        return result
-
-    except Exception as exc:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(exc)
-        )
-
 
 # ============================================================
 # UI AUTOMATION RUN
@@ -428,66 +338,6 @@ def run_automation(
         print(
             f"\nAUTOMATION RUN FAILED: {exc}"
         )
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(exc)
-        )
-
-
-# ============================================================
-# API TEST GENERATION
-# ============================================================
-
-@app.post(
-    "/api/v1/api-tests/generate",
-    response_model=ApiTestGenerationResponse
-)
-def generate_api_tests(
-    request: ApiTestGenerationRequest
-):
-    try:
-
-        result = api_test_generator.generate_api_tests(
-            requirement=request.requirement,
-            base_url=request.base_url
-        )
-
-        return ApiTestGenerationResponse(
-            requirement=request.requirement,
-            base_url=request.base_url,
-            test_cases=result.test_cases
-        )
-
-    except Exception as exc:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(exc)
-        )
-
-
-# ============================================================
-# API TEST EXECUTION
-# ============================================================
-
-@app.post(
-    "/api/v1/api-tests/execute",
-    response_model=ApiTestExecutionResponse
-)
-def execute_api_test(
-    request: ApiTestExecutionRequest
-):
-    try:
-
-        result = api_test_executor.execute(
-            base_url=request.base_url,
-            test_case=request.test_case
-        )
-
-        return result
-
-    except Exception as exc:
 
         raise HTTPException(
             status_code=500,
